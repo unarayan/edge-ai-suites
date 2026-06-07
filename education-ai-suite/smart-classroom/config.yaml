@@ -476,3 +476,14 @@ content_search:
     max_history_turns: 3    # number of prior conversation turns (user+assistant pairs) sent to the VLM
     context_window: 16384   # token budget for dynamic context selection; 
     retrieval_score_threshold: 85  # minimum relevance score (0-100) a chunk must have to be used as context
+
+# ── Telegram integration (OpenClaw bridge) ────────────────────────────────────
+# Set enabled: true and fill in bot_token + chat_id to activate.
+# Smart Classroom will send session data to the shared Telegram group after
+# each pipeline stage completes; OpenClaw listens on the Linux side and
+# answers teacher / parent queries from that same group.
+telegram:
+  enabled: false                     # flip to true to activate
+  bot_token: "YOUR_BOT_TOKEN_HERE"   # from @BotFather
+  chat_id: "YOUR_CHAT_ID_HERE"       # negative number for a group chat
+  class_name: "Class 10A - Physics"  # displayed in every Telegram message

@@ -27,6 +27,7 @@ from dto.search_dto import SearchRequest
 from utils.session_state_manager import SessionState
 from dto.ocr_dto import OCRExtractRequest, OCRResponse
 from components.ocr.ocr_pipeline import ocr_detect_file, ocr_extract_text
+from utils.telegram_sender import get_sender
 
 import logging
 logger = logging.getLogger(__name__)
@@ -451,6 +452,21 @@ def stop_video_analytics_pipeline(
                         "error": str(e)
                     })                                   
 
+            # ── Telegram: Package B+C (Q2 engagement + Q4 participation) ────
+            # Triggered once all stop requests for this session are processed.
+            # Uses front_posture.txt for video stats; transcription.txt for audio.
+            sender = get_sender()
+            if sender:
+                project_config = RuntimeConfig.get_section("Project")
+                location = project_config.get("location", "outputs")
+                name     = project_config.get("name", "default")
+                session_dir      = os.path.join(location, name, x_session_id)
+                va_posture_file  = os.path.join(location, name, x_session_id, "va", "front_posture.txt")
+                sender.send_engagement_package_async(
+                    x_session_id, session_dir, va_posture_file
+                )
+            # ────────────────────────────────────────────────────────────────
+
             return JSONResponse(content={"results": results}, status_code=200)
 
         except Exception as e:
@@ -686,6 +702,21 @@ def content_segmentation(request: SummaryRequest):
     try:
         contents_json = pipeline.run_content_segmentation()
         logger.info("✅ content segmentation generated successfully.")
+
+        # ── Telegram: Package A (Q1 topics + Q3 absentee data) ──────────────
+        # All audio outputs are ready: transcription, summary, mindmap, topics.
+        # Send is fire-and-forget — does not block the API response.
+        sender = get_sender()
+        if sender:
+            project_config = RuntimeConfig.get_section("Project")
+            session_dir = os.path.join(
+                project_config.get("location", "outputs"),
+                project_config.get("name", "default"),
+                request.session_id,
+            )
+            sender.send_content_package_async(request.session_id, session_dir)
+        # ────────────────────────────────────────────────────────────────────
+
         return JSONResponse(content={"session_id": request.session_id})
 
     except HTTPException as http_exc:
