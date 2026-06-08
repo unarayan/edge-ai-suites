@@ -18,13 +18,15 @@ Package B+C  (sent when VA pipeline stops)  →  answers Q2, Q4
 Activation: set  telegram.enabled: true  in config.yaml
 """
 
+import asyncio
 import json
 import logging
 import os
 import threading
 from datetime import datetime
 
-import requests
+from telethon import TelegramClient
+from telethon.sessions import StringSession
 
 logger = logging.getLogger(__name__)
 
@@ -44,11 +46,13 @@ def get_sender():
         tg = getattr(config, "telegram", None)
         if tg and getattr(tg, "enabled", False):
             _sender_instance = TelegramSender(
-                bot_token=tg.bot_token,
-                chat_id=str(tg.chat_id),
+                api_id=int(tg.api_id),
+                api_hash=str(tg.api_hash),
+                session_string=str(tg.session_string),
+                chat_id=int(str(tg.chat_id)),
                 class_name=getattr(tg, "class_name", "Smart Classroom"),
             )
-            logger.info("[Telegram] Sender initialised.")
+            logger.info("[Telegram] Sender initialised (userbot).")
     except Exception as exc:
         logger.error(f"[Telegram] Failed to initialise sender: {exc}")
     return _sender_instance
@@ -57,49 +61,39 @@ def get_sender():
 # ── Core class ────────────────────────────────────────────────────────────────
 
 class TelegramSender:
-    def __init__(self, bot_token: str, chat_id: str, class_name: str):
-        self._base = f"https://api.telegram.org/bot{bot_token}"
-        self._chat_id = str(chat_id)
+    def __init__(self, api_id: int, api_hash: str, session_string: str,
+                 chat_id: int, class_name: str):
+        self._api_id = api_id
+        self._api_hash = api_hash
+        self._session_string = session_string
+        self._chat_id = chat_id
         self._class_name = class_name
 
-    # ── Low-level helpers ─────────────────────────────────────────────────────
+    def _make_client(self) -> TelegramClient:
+        return TelegramClient(
+            StringSession(self._session_string),
+            self._api_id,
+            self._api_hash,
+        )
 
-    def _send_message(self, text: str):
-        try:
-            resp = requests.post(
-                f"{self._base}/sendMessage",
-                json={"chat_id": self._chat_id, "text": text, "parse_mode": "Markdown"},
-                timeout=10,
-            )
-            resp.raise_for_status()
-        except Exception as exc:
-            logger.error(f"[Telegram] sendMessage failed: {exc}")
+    # ── Low-level async helpers (take an already-connected client) ────────────
 
-    def _send_file(self, file_path: str, caption: str = ""):
+    async def _send_message_async(self, client: TelegramClient, text: str):
         try:
-            with open(file_path, "rb") as fh:
-                resp = requests.post(
-                    f"{self._base}/sendDocument",
-                    data={"chat_id": self._chat_id, "caption": caption},
-                    files={"document": (os.path.basename(file_path), fh)},
-                    timeout=30,
-                )
-            resp.raise_for_status()
+            await client.send_message(self._chat_id, text, parse_mode="md")
         except Exception as exc:
-            logger.error(f"[Telegram] sendDocument failed for {file_path}: {exc}")
+            logger.error(f"[Telegram] send_message failed: {exc}")
+
+    async def _send_file_async(self, client: TelegramClient,
+                               file_path: str, caption: str = ""):
+        try:
+            await client.send_file(self._chat_id, file_path, caption=caption)
+        except Exception as exc:
+            logger.error(f"[Telegram] send_file failed for {file_path}: {exc}")
 
     # ── Package A — Session Content ───────────────────────────────────────────
 
-    def send_content_package(self, session_id: str, session_dir: str):
-        """
-        Triggered after content-segmentation completes.
-
-        Answers:
-          Q1 – topics covered  →  topics.json  +  Session Outline in summary.md
-          Q3 – absentee pack   →  full summary.md  +  topics.json
-
-        Files sent: session_meta.json, summary.md, topics.json, mindmap.mmd
-        """
+    async def _content_package_coro(self, session_id: str, session_dir: str):
         date_str = datetime.now().strftime("%Y-%m-%d")
         time_str = datetime.now().strftime("%H:%M")
 
@@ -125,42 +119,36 @@ class TelegramSender:
         with open(meta_path, "w", encoding="utf-8") as fh:
             json.dump(meta, fh, indent=2)
 
-        self._send_message(
-            f"*Session Content Ready*\n"
-            f"Class: {self._class_name}\n"
-            f"Session: `{session_id}`\n"
-            f"Date: {date_str}  |  Time: {time_str}\n\n"
-            f"_Provides data for Q1 (topics covered) and Q3 (absentee catch-up)_"
-        )
-
-        for fname, caption in [
-            ("session_meta.json", "Envelope — load this first (Q1 / Q3)"),
-            ("summary.md",        "Q1 / Q3 — Lesson summary with key takeaways and session outline"),
-            ("topics.json",       "Q1 / Q3 — Timestamped topic segments"),
-            ("mindmap.mmd",       "Q1     — Mind map of lesson concepts (Mermaid format)"),
-        ]:
-            path = os.path.join(session_dir, fname)
-            if os.path.exists(path):
-                self._send_file(path, caption)
-            else:
-                logger.warning(f"[Telegram] Package A: {fname} not found, skipping")
+        async with self._make_client() as client:
+            await self._send_message_async(
+                client,
+                f"**Session Content Ready**\n"
+                f"Class: {self._class_name}\n"
+                f"Session: `{session_id}`\n"
+                f"Date: {date_str}  |  Time: {time_str}\n\n"
+                f"_Provides data for Q1 (topics covered) and Q3 (absentee catch-up)_",
+            )
+            for fname, caption in [
+                ("session_meta.json", "Envelope — load this first (Q1 / Q3)"),
+                ("summary.md",        "Q1 / Q3 — Lesson summary with key takeaways and session outline"),
+                ("topics.json",       "Q1 / Q3 — Timestamped topic segments"),
+                ("mindmap.mmd",       "Q1     — Mind map of lesson concepts (Mermaid format)"),
+            ]:
+                path = os.path.join(session_dir, fname)
+                if os.path.exists(path):
+                    await self._send_file_async(client, path, caption)
+                else:
+                    logger.warning(f"[Telegram] Package A: {fname} not found, skipping")
 
         logger.info(f"[Telegram] Package A sent for session {session_id}")
 
+    def send_content_package(self, session_id: str, session_dir: str):
+        asyncio.run(self._content_package_coro(session_id, session_dir))
+
     # ── Package B+C — Engagement & Participation ──────────────────────────────
 
-    def send_engagement_package(self, session_id: str, session_dir: str,
-                                va_posture_file: str = None):
-        """
-        Triggered when the VA pipeline stops.
-
-        Answers:
-          Q2 – engagement    →  engagement_report.json
-          Q4 – participation →  participation_report.json
-
-        Audio stats are derived from transcription.txt (TEACHER:/STUDENT: labels).
-        Video stats are derived from front_posture.txt (GVA metadata JSON-lines).
-        """
+    async def _engagement_package_coro(self, session_id: str, session_dir: str,
+                                       va_posture_file: str = None):
         date_str = datetime.now().strftime("%Y-%m-%d")
         engagement, participation = self._build_engagement_data(
             session_id, date_str, session_dir, va_posture_file
@@ -174,17 +162,25 @@ class TelegramSender:
         with open(part_path, "w", encoding="utf-8") as fh:
             json.dump(participation, fh, indent=2)
 
-        self._send_message(
-            f"*Engagement & Participation Ready*\n"
-            f"Class: {self._class_name}\n"
-            f"Session: `{session_id}`\n"
-            f"Date: {date_str}\n\n"
-            f"_Provides data for Q2 (engagement) and Q4 (participation / hand raises)_"
-        )
-        self._send_file(eng_path,  "Q2 — Engagement report (talk time, attendance, hand raises)")
-        self._send_file(part_path, "Q4 — Per-student participation ranked by hand raises")
+        async with self._make_client() as client:
+            await self._send_message_async(
+                client,
+                f"**Engagement & Participation Ready**\n"
+                f"Class: {self._class_name}\n"
+                f"Session: `{session_id}`\n"
+                f"Date: {date_str}\n\n"
+                f"_Provides data for Q2 (engagement) and Q4 (participation / hand raises)_",
+            )
+            await self._send_file_async(client, eng_path,
+                                        "Q2 — Engagement report (talk time, attendance, hand raises)")
+            await self._send_file_async(client, part_path,
+                                        "Q4 — Per-student participation ranked by hand raises")
 
         logger.info(f"[Telegram] Packages B+C sent for session {session_id}")
+
+    def send_engagement_package(self, session_id: str, session_dir: str,
+                                va_posture_file: str = None):
+        asyncio.run(self._engagement_package_coro(session_id, session_dir, va_posture_file))
 
     # ── Data builders ─────────────────────────────────────────────────────────
 
@@ -323,20 +319,21 @@ if __name__ == "__main__":
     import sys
 
     # Fill in before running ↓
-    BOT_TOKEN  = "YOUR_BOT_TOKEN_HERE"
-    CHAT_ID    = "YOUR_CHAT_ID_HERE"
-    CLASS_NAME = "Test Class"
+    API_ID         = 0                          # from my.telegram.org
+    API_HASH       = "YOUR_API_HASH_HERE"       # from my.telegram.org
+    SESSION_STRING = "YOUR_SESSION_STRING_HERE" # from generate_session.py
+    CHAT_ID        = -1001234567890             # group chat id (negative number)
+    CLASS_NAME     = "Test Class"
 
     # Folder that already contains summary.md
     TEST_SESSION_DIR = r"C:\path\to\your\session\output\folder"
     TEST_SESSION_ID  = "test_session_001"
 
-    sender = TelegramSender(BOT_TOKEN, CHAT_ID, CLASS_NAME)
+    sender = TelegramSender(API_ID, API_HASH, SESSION_STRING, CHAT_ID, CLASS_NAME)
 
     print("1. Sending text message...")
-    sender._send_message(
-        f"*Test message from SmartClassroom*\nSession: `{TEST_SESSION_ID}`"
-    )
+    import asyncio
+    asyncio.run(sender._content_package_coro(TEST_SESSION_ID, TEST_SESSION_DIR))
     print("   OK")
 
     summary_path = os.path.join(TEST_SESSION_DIR, "summary.md")
