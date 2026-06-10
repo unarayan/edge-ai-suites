@@ -48,6 +48,7 @@ faiss-cpu==1.11.0
 
 # Telegram userbot transport
 telethon==1.39.0
+pysocks==1.7.1
 
 # Utilities
 fsspec>=2023.1.0,<=2025.3.0

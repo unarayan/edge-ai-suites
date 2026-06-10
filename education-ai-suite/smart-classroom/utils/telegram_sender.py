@@ -25,6 +25,7 @@ import os
 import threading
 from datetime import datetime
 
+import socks
 from telethon import TelegramClient
 from telethon.sessions import StringSession
 
@@ -45,12 +46,20 @@ def get_sender():
         from utils.config_loader import config  # lazy import avoids circular refs
         tg = getattr(config, "telegram", None)
         if tg and getattr(tg, "enabled", False):
+            proxy_cfg = getattr(tg, "proxy", None)
+            proxy = None
+            if proxy_cfg and getattr(proxy_cfg, "host", ""):
+                ptype = socks.SOCKS5 if str(getattr(proxy_cfg, "type", "http")).lower() == "socks5" else socks.HTTP
+                user = getattr(proxy_cfg, "username", "") or None
+                pwd  = getattr(proxy_cfg, "password", "") or None
+                proxy = (ptype, str(proxy_cfg.host), int(proxy_cfg.port), True, user, pwd)
             _sender_instance = TelegramSender(
                 api_id=int(tg.api_id),
                 api_hash=str(tg.api_hash),
                 session_string=str(tg.session_string),
                 chat_id=int(str(tg.chat_id)),
                 class_name=getattr(tg, "class_name", "Smart Classroom"),
+                proxy=proxy,
             )
             logger.info("[Telegram] Sender initialised (userbot).")
     except Exception as exc:
@@ -62,18 +71,20 @@ def get_sender():
 
 class TelegramSender:
     def __init__(self, api_id: int, api_hash: str, session_string: str,
-                 chat_id: int, class_name: str):
+                 chat_id: int, class_name: str, proxy=None):
         self._api_id = api_id
         self._api_hash = api_hash
         self._session_string = session_string
         self._chat_id = chat_id
         self._class_name = class_name
+        self._proxy = proxy
 
     def _make_client(self) -> TelegramClient:
         return TelegramClient(
             StringSession(self._session_string),
             self._api_id,
             self._api_hash,
+            proxy=self._proxy,
         )
 
     # ── Low-level async helpers (take an already-connected client) ────────────
