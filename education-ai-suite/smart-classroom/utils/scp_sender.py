@@ -49,7 +49,6 @@ def get_scp_sender():
         if cfg and getattr(cfg, "enabled", False):
             _sender_instance = SCPSender(
                 host=str(cfg.host),
-                username=getattr(cfg, "username", "") or "",
                 identity_file=getattr(cfg, "identity_file", "") or "",
                 remote_base_path=str(cfg.remote_base_path),
                 class_name=getattr(cfg, "class_name", "Smart Classroom"),
@@ -63,10 +62,9 @@ def get_scp_sender():
 # ── Core class ─────────────────────────────────────────────────────────────────
 
 class SCPSender:
-    def __init__(self, host: str, username: str, identity_file: str,
+    def __init__(self, host: str, identity_file: str,
                  remote_base_path: str, class_name: str):
         self._host = host
-        self._username = username
         self._identity_file = identity_file
         self._remote_base_path = remote_base_path.rstrip("/")
         self._class_name = class_name
@@ -74,8 +72,8 @@ class SCPSender:
     # ── Subprocess helpers ─────────────────────────────────────────────────────
 
     def _remote_host(self) -> str:
-        """Return  user@host  or just  host  depending on config."""
-        return f"{self._username}@{self._host}" if self._username else self._host
+        """Return the SSH host alias or IP (user resolved by ~/.ssh/config)."""
+        return self._host
 
     def _ssh_options(self) -> list:
         """Common SSH options shared by both ssh and scp commands."""

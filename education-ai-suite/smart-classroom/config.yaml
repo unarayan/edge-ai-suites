@@ -509,7 +509,6 @@ telegram:
 scp_sender:
   enabled: false                          # flip to true to activate
   host: "ptl"                             # SSH alias from ~/.ssh/config, or IP/hostname
-  username: ""                            # SSH username (leave empty if set in .ssh/config)
   identity_file: ""                       # path to private key, e.g. C:\Users\you\.ssh\id_ed25519
                                           # leave empty to use the SSH default (~/.ssh/id_*)
   remote_base_path: "/home/intel/smart_classroom_incoming"  # landing dir on Linux
