@@ -38,10 +38,13 @@ It is assumed here that Smart Classroom application is setup in a separate node 
     sudo apt update
     sudo apt upgrade -y
     sudo apt install -y build-essential curl git procps
-    /bin/bash -c "$(curl -fsSL https://githubusercontent.com)"
-    test -d ~/.linuxbrew && eval "$(~/.linuxbrew/bin/brew shellenv)"
-    test -d /home/linuxbrew/.linuxbrew && eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-    echo "eval \"\$($(brew --shellenv))\"" >> ~/.bashrc
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+    echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> ~/.bashrc
+    mkdir -p ~/.npm-global
+    npm config set prefix '~/.npm-global'
+    export PATH="$HOME/.npm-global/bin:$PATH"
+    echo 'export PATH="$HOME/.npm-global/bin:$PATH"' >> ~/.bashrc
   ```
 
 ## Setup OVMS
@@ -83,11 +86,11 @@ TODO: Add screenshots
 
 The step 1 leads to OpenClaw onboarding process. Follow the steps listed below.
 1. Read the security warning and press the left arrow key to navigate to Yes and hit Enter to continue. Hit enter again to select Quick Start.
-2. Press the down arrow key to scroll down till you "Custom Provider" and click enter. 
+2. Press the down arrow key to scroll down to "more" and hit Enter to expand the list, then continue scrolling down to "Custom Provider" and hit Enter.
 3. Provide the OVMS link for API base URL: `http://127.0.0.1:8000/v3`
 4. Press enter on API key.
 5. Select `OpenAI` for end point compatibility. (TODO: Provide exact field name)
-6. Enter the following for Model ID: `Qwen3-8B-in4-ov`. This should give `verification susccessful` message on the screen. If not, go back to #3.
+6. Enter the following for Model ID: `OpenVINO/Qwen3-8B-int4-ov`. This should give `verification successful` message on the screen. If not, go back to #3.
 7. For Model Alias, enter a name of your choice. Example, `Qwen3-ovms`
 8. Select the communication channel for your bot. Select `Telegram` for this use case.
 9. Enter your Telegram bot token. On the screen, you should see instructions like:
