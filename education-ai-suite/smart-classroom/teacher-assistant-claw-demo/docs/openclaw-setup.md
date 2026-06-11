@@ -41,10 +41,6 @@ It is assumed here that Smart Classroom application is setup in a separate node 
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
     eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
     echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> ~/.bashrc
-    mkdir -p ~/.npm-global
-    npm config set prefix '~/.npm-global'
-    export PATH="$HOME/.npm-global/bin:$PATH"
-    echo 'export PATH="$HOME/.npm-global/bin:$PATH"' >> ~/.bashrc
   ```
 
 ## Setup OVMS
