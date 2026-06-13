@@ -74,11 +74,19 @@ curl http://localhost:8000/v3/models
 It is recommended to follow the standard OpenClaw documentation. Following command installs OpenClaw along with a few other dependencies specific to OpenClaw. This instruction is temporarily provided here as eventually the official documentation is recommended.
 
 ``` bash
-curl -fsSL https://openclaw.ai/install.sh | bash
+curl -fsSL --proto '=https' --tlsv1.2 https://openclaw.ai/install.sh | bash -s -- --install-method npm --version 2026.6.6 --no-onboard
 ```
 
 ### Step 2: Configure OpenClaw
 TODO: Add screenshots
+
+Apply the pre-configured settings using the provided config file:
+
+``` bash
+openclaw config patch --file ./openclaw-config.json
+```
+
+<details> <summary>Alternativelly configure OpenClaw interactively.</summary>
 
 The step 1 leads to OpenClaw onboarding process. Follow the steps listed below.
 1. Read the security warning and press the left arrow key to navigate to Yes and hit Enter to continue. Hit enter again to select Quick Start.
@@ -101,6 +109,8 @@ The step 1 leads to OpenClaw onboarding process. Follow the steps listed below.
 11. Add the required skills. Select blogwatcher, nanopdf, clawhub (select npm), and github.
 12. Skip the hooks configuration. TODO: revisit.
 13. Hatch your claw in the terminal
+
+</details>
 
 ## Learn More
 
