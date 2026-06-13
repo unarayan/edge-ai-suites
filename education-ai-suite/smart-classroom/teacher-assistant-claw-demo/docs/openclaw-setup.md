@@ -47,13 +47,13 @@ It is assumed here that Smart Classroom application is setup in a separate node 
 OVMS should be setup before OpenClaw installation to ensure easy discoverability and configuration. The OVMS setup is done with the following simple steps.
 
 ``` bash
-mkdir -p $(pwd)/models
+mkdir -p ~/models
 docker run -d --rm \
        --user $(id -u):$(id -g) \
        --device /dev/dri \
        --group-add=$(stat -c "%g" /dev/dri/render* | head -n 1) \
        -p 8000:8000 \
-       -v ~/models/models:/models \
+       -v ~/models:/models \
        openvino/model_server:latest-gpu \
        --source_model OpenVINO/Qwen3-8B-int4-ov \
        --model_repository_path /models \
