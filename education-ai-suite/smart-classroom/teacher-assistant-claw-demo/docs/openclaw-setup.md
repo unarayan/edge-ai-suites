@@ -48,17 +48,20 @@ OVMS should be setup before OpenClaw installation to ensure easy discoverability
 
 ``` bash
 mkdir -p $(pwd)/models
-docker run --user $(id -u):$(id -g) -d \
+docker run -d --rm \
+       --user $(id -u):$(id -g) \
        --device /dev/dri \
        --group-add=$(stat -c "%g" /dev/dri/render* | head -n 1) \
-       --rm -p 8000:8000 \
-       -v $(pwd)/models:/models:rw \
+       -p 8000:8000 \
+       -v ~/models/models:/models \
        openvino/model_server:latest-gpu \
        --source_model OpenVINO/Qwen3-8B-int4-ov \
-       --model_repository_path models \
+       --model_repository_path /models \
        --task text_generation \
+       --tool_parser hermes3 \
        --rest_port 8000 \
-       --target_device GPU
+       --target_device GPU \
+       --cache_size 4
 ```
 Verify OVMS is running using the following command
 ``` bash

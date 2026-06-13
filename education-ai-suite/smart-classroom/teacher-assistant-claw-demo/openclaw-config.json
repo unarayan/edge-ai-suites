@@ -1,7 +1,7 @@
 {
     "agents": {
         "defaults": {
-            "workspace": "/home/user/.openclaw/workspace",
+            "workspace": "~/.openclaw/workspace",
             "model": {
                 "primary": "ovms/OpenVINO/Qwen3-8B-int4-ov"
             },
