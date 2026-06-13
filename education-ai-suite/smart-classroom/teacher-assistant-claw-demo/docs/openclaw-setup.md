@@ -88,9 +88,12 @@ TODO: Add screenshots
 
 Before applying the configuration, you need to update the following placeholders in the `openclaw-config.json` file:
 
-TODO: Add token generation instructions for OpenClaw gateway.
+Generate the token and replace <REPLACE_WITH_NEW_GATEWAY_TOKEN> in the config file.
 
-Copy the generated token and replace <REPLACE_WITH_NEW_GATEWAY_TOKEN> in the config file.
+``` bash
+TOKEN=$(openssl rand -hex 16)
+echo "{\"gateway\": {\"auth\": {\"mode\": \"token\", \"token\": \"$TOKEN\"}}}" > ./openclaw-config.json
+```
 
 Update Telegram Bot Token: Replace <Telegram-Bot-token> with your actual Telegram bot token in the config file.
 
@@ -106,8 +109,8 @@ Useful debugging commands to check the status of OpenClaw and the gateway are pr
 ``` bash
 openclaw gateway status
 openclaw status
+openclaw config get gateway.auth.token
 ```
-
 
 <details> <summary>Alternativelly configure OpenClaw interactively.</summary>
 
