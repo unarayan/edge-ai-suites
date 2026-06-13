@@ -70,6 +70,9 @@ curl http://localhost:8000/v3/models
 
 ## Setup Telegram
 
+Open Telegram and chat with @BotFather
+Run /newbot (or /mybots for existing bots)
+Copy the token (looks like 123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11)
 
 ## Setup OpenClaw
 
@@ -83,11 +86,28 @@ curl -fsSL --proto '=https' --tlsv1.2 https://openclaw.ai/install.sh | bash -s -
 ### Step 2: Configure OpenClaw
 TODO: Add screenshots
 
-Apply the pre-configured settings using the provided config file:
+Before applying the configuration, you need to update the following placeholders in the `openclaw-config.json` file:
+
+TODO: Add token generation instructions for OpenClaw gateway.
+
+Copy the generated token and replace <REPLACE_WITH_NEW_GATEWAY_TOKEN> in the config file.
+
+Update Telegram Bot Token: Replace <Telegram-Bot-token> with your actual Telegram bot token in the config file.
+
+Apply Configuration: Once you've updated both tokens in the config file, apply the settings:
 
 ``` bash
 openclaw config patch --file ./openclaw-config.json
+openclaw gateway restart
 ```
+
+Useful debugging commands to check the status of OpenClaw and the gateway are provided below:
+
+``` bash
+openclaw gateway status
+openclaw status
+```
+
 
 <details> <summary>Alternativelly configure OpenClaw interactively.</summary>
 
