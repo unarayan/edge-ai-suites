@@ -72,7 +72,24 @@ curl http://localhost:8000/v3/models
 
 Perform the following steps to setup OpenClaw agent for the Teacher Assistant demo.
 
-### Step 1: OpenClaw installation
+### Step 1: Clone the repository
+
+Clone the repository and navigate to the Teacher Assistant demo directory. All subsequent commands assume you are in this directory.
+
+``` bash
+git clone https://github.com/open-edge-platform/edge-ai-suites.git
+cd edge-ai-suites/education-ai-suite/smart-classroom/teacher-assistant-claw-demo
+```
+
+### Step 2: Create the data directory
+
+Create the incoming data directory where Smart Classroom application will deposit reports:
+
+``` bash
+mkdir -p ~/smart_classroom_incoming
+```
+
+### Step 3: OpenClaw installation
 
 Quickly install OpenClaw using the following command. The version of OpenClaw can be changed as per the requirement.
 
@@ -80,13 +97,13 @@ Quickly install OpenClaw using the following command. The version of OpenClaw ca
 curl -fsSL https://openclaw.ai/install.sh | bash -s -- --version 2026.6.6 --no-onboard
 ```
 
-### Step 2: Configure OpenClaw
+### Step 4: Configure OpenClaw
 
-Apply Configuration and restart the gateway for the changes to take effect.:
+Apply configuration from the repo and restart the gateway for the changes to take effect:
 
 ``` bash
 openclaw config patch --file ./openclaw-config.json
-openclaw gateway restart
+openclaw gateway install
 ```
 
 <details>
@@ -103,7 +120,7 @@ openclaw config get gateway.auth.token
 
 <details> <summary>Alternativelly configure OpenClaw interactively.</summary>
 
-The step 1 leads to OpenClaw onboarding process. Follow the steps listed below.
+The step 3 leads to OpenClaw onboarding process. Follow the steps listed below.
 1. Read the security warning and press the left arrow key to navigate to Yes and hit Enter to continue. Hit enter again to select Quick Start.
 2. Press the down arrow key to scroll down to "more" and hit Enter to expand the list, then continue scrolling down to "Custom Provider" and hit Enter.
 3. Provide the OVMS link for API base URL: `http://127.0.0.1:8000/v3`
@@ -127,7 +144,29 @@ The step 1 leads to OpenClaw onboarding process. Follow the steps listed below.
 
 </details>
 
-### Step 3: Run OpenClaw agent
+### Step 5: Deploy workspace files
+
+Copy the workspace configuration files (SOUL.md, AGENTS.md, SKILL.md) to the OpenClaw workspace directory. These files define the agent persona, available agents, and skills.
+
+``` bash
+chmod +x ./setup-openclaw-workspace.sh
+./setup-openclaw-workspace.sh
+```
+
+This script creates the following structure:
+
+```
+~/.openclaw/workspace/
+├── SOUL.md                          # Agent persona and behavior
+├── AGENTS.md                        # Agent definitions
+└── skills/
+    └── smart-classroom/
+        └── SKILL.md                 # Smart Classroom skill definition
+
+~/smart_classroom_incoming/          # Data directory for Smart Classroom reports
+```
+
+### Step 6: Run OpenClaw agent
 
 Run the following commands to start the OpenClaw agent in the terminal or in the web dashboard. 
 
