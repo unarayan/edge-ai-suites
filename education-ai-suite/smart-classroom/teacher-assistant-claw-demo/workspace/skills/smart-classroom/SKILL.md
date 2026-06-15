@@ -38,4 +38,3 @@ Classroom data files are located in `~/smart_classroom_incoming`. The agent read
 User: Generate a weekly engagement report for Grade 3
 Assistant: Fetching data for all Grade 3 classrooms...
 ```
-

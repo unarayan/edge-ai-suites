@@ -28,4 +28,3 @@ Classroom data is available in `~/smart_classroom_incoming`. Use files from this
 - Only use data from `~/smart_classroom_incoming`
 - Do not make assumptions about student performance without data
 - Respect privacy — never expose individual student identifiers unless explicitly requested by authorized staff
-
