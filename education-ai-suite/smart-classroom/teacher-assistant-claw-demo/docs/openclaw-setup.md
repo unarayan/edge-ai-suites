@@ -81,15 +81,7 @@ git clone https://github.com/open-edge-platform/edge-ai-suites.git
 cd edge-ai-suites/education-ai-suite/smart-classroom/teacher-assistant-claw-demo
 ```
 
-### Step 2: Create the data directory
-
-Create the incoming data directory where Smart Classroom application will deposit reports:
-
-``` bash
-mkdir -p ~/smart_classroom_incoming
-```
-
-### Step 3: OpenClaw installation
+### Step 2: OpenClaw installation
 
 Quickly install OpenClaw using the following command. The version of OpenClaw can be changed as per the requirement.
 
@@ -97,7 +89,7 @@ Quickly install OpenClaw using the following command. The version of OpenClaw ca
 curl -fsSL https://openclaw.ai/install.sh | bash -s -- --version 2026.6.6 --no-onboard
 ```
 
-### Step 4: Configure OpenClaw
+### Step 3: Configure OpenClaw
 
 Apply configuration from the repo and restart the gateway for the changes to take effect:
 
@@ -120,7 +112,7 @@ openclaw config get gateway.auth.token
 
 <details> <summary>Alternativelly configure OpenClaw interactively.</summary>
 
-The step 3 leads to OpenClaw onboarding process. Follow the steps listed below.
+The step 2 leads to OpenClaw onboarding process. Follow the steps listed below.
 1. Read the security warning and press the left arrow key to navigate to Yes and hit Enter to continue. Hit enter again to select Quick Start.
 2. Press the down arrow key to scroll down to "more" and hit Enter to expand the list, then continue scrolling down to "Custom Provider" and hit Enter.
 3. Provide the OVMS link for API base URL: `http://127.0.0.1:8000/v3`
@@ -144,7 +136,7 @@ The step 3 leads to OpenClaw onboarding process. Follow the steps listed below.
 
 </details>
 
-### Step 5: Deploy workspace files
+### Step 4: Deploy workspace files
 
 Copy the workspace configuration files (SOUL.md, AGENTS.md, SKILL.md) to the OpenClaw workspace directory. These files define the agent persona, available agents, and skills.
 
@@ -159,14 +151,16 @@ This script creates the following structure:
 ~/.openclaw/workspace/
 ├── SOUL.md                          # Agent persona and behavior
 ├── AGENTS.md                        # Agent definitions
+├── smart_classroom_incoming/        # Data directory for Smart Classroom reports
+│   └── lesson1.md                   # Sample lesson report (included as example)
 └── skills/
     └── smart-classroom/
         └── SKILL.md                 # Smart Classroom skill definition
-
-~/smart_classroom_incoming/          # Data directory for Smart Classroom reports
 ```
 
-### Step 6: Run OpenClaw agent
+> **Note:** The `smart_classroom_incoming/` directory is where the Smart Classroom application deposits lesson reports for the agent to analyze. A sample file (`lesson1.md`) is included as an example. You can add additional lesson reports to `~/.openclaw/workspace/smart_classroom_incoming/` at any time — the agent will pick them up automatically when answering questions or generating reports.
+
+### Step 5: Run OpenClaw agent
 
 Run the following commands to start the OpenClaw agent in the terminal or in the web dashboard. 
 

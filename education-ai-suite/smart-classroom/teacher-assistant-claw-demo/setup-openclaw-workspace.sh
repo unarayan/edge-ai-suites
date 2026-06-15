@@ -20,9 +20,10 @@ echo "[1/4] Creating workspace directories..."
 mkdir -p "${OPENCLAW_WORKSPACE}"
 mkdir -p "${OPENCLAW_WORKSPACE}/skills/smart-classroom"
 
-# Create incoming data directory for Smart Classroom
-echo "[2/4] Creating Smart Classroom data directory..."
-mkdir -p "${HOME}/smart_classroom_incoming"
+# Create incoming data directory for Smart Classroom and copy sample data
+echo "[2/4] Creating Smart Classroom data directory and copying sample data..."
+mkdir -p "${OPENCLAW_WORKSPACE}/smart_classroom_incoming"
+cp "${WORKSPACE_SRC}/smart_classroom_incoming/"*.md "${OPENCLAW_WORKSPACE}/smart_classroom_incoming/" 2>/dev/null || true
 
 # Copy SOUL.md and AGENTS.md to workspace root
 echo "[3/4] Copying SOUL.md and AGENTS.md to workspace..."
@@ -42,7 +43,6 @@ echo "  ${OPENCLAW_WORKSPACE}/AGENTS.md"
 echo "  ${OPENCLAW_WORKSPACE}/skills/smart-classroom/SKILL.md"
 echo ""
 echo "Data directory created:"
-echo "  ${HOME}/smart_classroom_incoming"
+echo "  ${OPENCLAW_WORKSPACE}/smart_classroom_incoming"
 echo ""
 echo "You can now run: openclaw chat  OR  openclaw dashboard"
-

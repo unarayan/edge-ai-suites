@@ -11,7 +11,7 @@ This skill enables the Teacher Assistant agent to interact with the Smart Classr
 
 ## Data Source
 
-Classroom data files are located in `~/smart_classroom_incoming`. The agent reads reports and analytics from this directory.
+Classroom data files are located in `smart_classroom_incoming`. The agent reads reports and analytics from this directory.
 
 ## Inputs
 
@@ -21,7 +21,7 @@ Classroom data files are located in `~/smart_classroom_incoming`. The agent read
 
 ## Steps
 
-1. Read data files from `~/smart_classroom_incoming`
+1. Read data files from `smart_classroom_incoming`
 2. Identify relevant data for the requested scope (class, grade, or school)
 3. Process and aggregate data as needed
 4. Format the report in the requested style
@@ -29,7 +29,7 @@ Classroom data files are located in `~/smart_classroom_incoming`. The agent read
 
 ## Configuration
 
-- **Data Directory**: `~/smart_classroom_incoming`
+- **Data Directory**: `smart_classroom_incoming`
 - **Data Format**: Files deposited by the Smart Classroom application
 
 ## Example Usage
