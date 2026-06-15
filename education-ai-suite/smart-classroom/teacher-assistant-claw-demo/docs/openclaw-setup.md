@@ -68,49 +68,38 @@ Verify OVMS is running using the following command
 curl http://localhost:8000/v3/models
 ```
 
-## Setup Telegram
-
-Open Telegram and chat with @BotFather
-Run /newbot (or /mybots for existing bots)
-Copy the token (looks like 123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11)
-
 ## Setup OpenClaw
 
+Perform the following steps to setup OpenClaw agent for the Teacher Assistant demo.
+
 ### Step 1: OpenClaw installation
-It is recommended to follow the standard OpenClaw documentation. Following command installs OpenClaw along with a few other dependencies specific to OpenClaw. This instruction is temporarily provided here as eventually the official documentation is recommended.
+
+Quickly install OpenClaw using the following command. The version of OpenClaw can be changed as per the requirement.
 
 ``` bash
-curl -fsSL --proto '=https' --tlsv1.2 https://openclaw.ai/install.sh | bash -s -- --install-method npm --version 2026.6.6 --no-onboard
+curl -fsSL https://openclaw.ai/install.sh | bash -s -- --version 2026.6.6 --no-onboard
 ```
 
 ### Step 2: Configure OpenClaw
-TODO: Add screenshots
 
-Before applying the configuration, you need to update the following placeholders in the `openclaw-config.json` file:
-
-Generate the token and replace <REPLACE_WITH_NEW_GATEWAY_TOKEN> in the config file.
-
-``` bash
-TOKEN=$(openssl rand -hex 16)
-echo "{\"gateway\": {\"auth\": {\"mode\": \"token\", \"token\": \"$TOKEN\"}}}" > ./openclaw-config.json
-```
-
-Update Telegram Bot Token: Replace <Telegram-Bot-token> with your actual Telegram bot token in the config file.
-
-Apply Configuration: Once you've updated both tokens in the config file, apply the settings:
+Apply Configuration and restart the gateway for the changes to take effect.:
 
 ``` bash
 openclaw config patch --file ./openclaw-config.json
 openclaw gateway restart
 ```
 
-Useful debugging commands to check the status of OpenClaw and the gateway are provided below:
+<details>
+
+<summary>Useful debugging commands to check the status of OpenClaw and the gateway are provided below:</summary>
 
 ``` bash
 openclaw gateway status
 openclaw status
 openclaw config get gateway.auth.token
 ```
+
+</details>
 
 <details> <summary>Alternativelly configure OpenClaw interactively.</summary>
 
@@ -137,6 +126,18 @@ The step 1 leads to OpenClaw onboarding process. Follow the steps listed below.
 13. Hatch your claw in the terminal
 
 </details>
+
+### Step 3: Run OpenClaw agent
+
+Run the following commands to start the OpenClaw agent in the terminal or in the web dashboard. 
+
+``` bash
+# Run the agent in the terminal
+openclaw chat
+
+# Run the agent in the web dashboard
+openclaw dashboard
+```
 
 ## Learn More
 
